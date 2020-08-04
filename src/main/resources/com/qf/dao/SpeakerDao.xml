@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qf.dao.SpeakerDao">
+
+    <resultMap id="SpeakerMap" type="com.qf.pojo.Speaker">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="speaker_name" property="speakerName" jdbcType="VARCHAR"/>
+        <result column="speaker_desc" property="speakerDesc" jdbcType="VARCHAR"/>
+        <result column="speaker_job" property="speakerJob" jdbcType="VARCHAR"/>
+        <result column="head_img_url" property="headImgUrl" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="findAll" resultType="HashMap">
+        select id, speaker_name, speaker_desc, speaker_job from speaker
+    </select>
+
+    <insert id="addSpeaker" parameterType="com.qf.pojo.Speaker">
+        insert into speaker(speaker_name, speaker_desc, speaker_job) values (#{speakerName}, #{speakerDesc}, #{speakerJob})
+    </insert>
+
+    <delete id="delete" parameterType="int">
+        delete from speaker where id = #{id}
+    </delete>
+
+    <update id="updateSpeaker" parameterType="com.qf.pojo.Speaker">
+        update speaker set
+        speaker_name=#{speakerName},speaker_job=#{speakerJob},speaker_desc=#{speakerDesc}
+        where id=#{id}
+    </update>
+
+    <select id="findSpeakerName">
+        select speaker_name from speaker
+    </select>
+
+    <select id="findAllSpeakers" resultMap="SpeakerMap">
+        select * from speaker
+    </select>
+
+</mapper>

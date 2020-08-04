@@ -1,0 +1,222 @@
+<table class="layui-hide" id="test" lay-filter="test"></table>
+
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+    </div>
+</script>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use('table', function(){
+        var table = layui.table;
+
+        table.render({
+            elem: '#test'
+            ,url:'speaker/findAll'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,title: '用户数据表'
+            ,cols: [[
+                {type: 'checkbox', fixed: 'left'}
+                ,{field:'id', title:'ID', width:80}
+                ,{field:'speaker_name', title:'姓名', width:80}
+                ,{field:'speaker_job', title:'职位', width:100}
+                ,{field:'speaker_desc', title:'简介', width: 800}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+            ]]
+            ,page: true
+        });
+
+        //头工具栏事件
+        table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：'+ data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选': '未全选');
+                    break;
+                case 'add':
+
+                    addSpeaker();
+
+
+                    break;
+
+                //自定义头工具栏右侧图标 - 提示
+                // case 'LAYTABLE_TIPS':
+                //     layer.alert('这是工具栏右侧自定义的一个图标按钮');
+                //     break;
+            };
+        });
+
+        //监听行工具事件
+        table.on('tool(test)', function(obj){
+            var data = obj.data;
+            //console.log(obj)
+            if(obj.event === 'del'){
+                layer.confirm('真的删除行么', function(index){
+                    obj.del();
+
+                    $.ajax({
+                        url:"speaker/delete",
+                        data:{"id": data.id},
+                        method: "POST",
+                        success:function () {
+                            window.location.reload();
+                        }
+                    })
+
+                    layer.close(index);
+                });
+            } else if(obj.event === 'edit'){
+
+                console.log(data.id)
+
+                updateSpeaker(data);
+
+                function updateSpeaker(data) {
+                    layer.open({
+                        type:1,
+                        content: $('#updateSpeaker').html(),
+                        area: ['600px', '600px'],
+                        title:"修改信息",
+                        btn: ['提交', '取消'],
+                        success:function () {
+                            $('#id').val(data.id)
+                            $('#speakerName').val(data.speaker_name)
+                            $('#speakerJob').val(data.speaker_job)
+                            $('#speakerDesc').val(data.speaker_desc)
+                        },
+                        yes : function () {
+                            $.ajax({
+                                url:"speaker/updateSpeaker",
+                                data: $('#updateForm').serialize(),
+                                method:"POST",
+                                success:function () {
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    })
+                }
+
+            }
+        });
+    });
+</script>
+
+
+<script>
+
+    function addSpeaker() {
+        layer.open({
+            type: 1,
+            content: $('#addSpeaker').html(),
+            title:"添加教师",
+            area:['600px', '600px'],
+            btn:['提交', '取消'],
+            yes: function () {
+                $.ajax({
+                    url: "speaker/addSpeaker",
+                    data:$('#addForm').serialize(),
+                    method:"POST",
+                    success:function () {
+                        window.location.reload();
+                    }
+                })
+            }
+        })
+    }
+
+</script>
+
+
+
+
+
+
+
+<script type="text/html" id="addSpeaker">
+
+    <form class="layui-form" id="addForm">
+
+        <div class="layui-form-item">
+        <label class="layui-form-label">请输入姓名</label>
+        <div class="layui-input-block">
+        <input type="text" name="speakerName" required  lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+        </div>
+        </div>
+
+        <div class="layui-form-item">
+        <label class="layui-form-label">请输入职位</label>
+        <div class="layui-input-block">
+        <input type="text" name="speakerJob" required  lay-verify="required" placeholder="请输入职位" autocomplete="off" class="layui-input">
+        </div>
+        </div>
+
+        <div class="layui-form-item">
+        <label class="layui-form-label">请输入简介</label>
+        <div class="layui-input-block">
+        <input type="text" name="speakerDesc" required  lay-verify="required" placeholder="请输入简介" autocomplete="off" class="layui-input">
+        </div>
+        </div>
+
+    </form>
+
+</script>
+
+
+
+<script type="text/html" id="updateSpeaker">
+
+    <form class="layui-form" id="updateForm" action="">
+
+        <input type="hidden" name="id" id="id">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">输入框</label>
+            <div class="layui-input-block">
+                <input type="text" id="speakerName" name="speakerName" required  lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">输入框</label>
+            <div class="layui-input-block">
+                <input type="text" id="speakerJob" name="speakerJob" required  lay-verify="required" placeholder="请输入职位" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">输入框</label>
+            <div class="layui-input-block">
+                <input type="text" id="speakerDesc" name="speakerDesc" required  lay-verify="required" placeholder="请输入简介" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+    </form>
+
+</script>
+
+
+
+
+
+
+
+
+
+
+

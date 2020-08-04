@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qf.dao.SubjectDao">
+
+    <resultMap id="SubjectMap" type="com.qf.pojo.Subject">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="subject_name" property="subjectName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="findAllSub" resultMap="SubjectMap">
+        select * from subject
+    </select>
+
+
+    <resultMap id="subMap" type="com.qf.pojo.Subject">
+        <id column="sid" property="id" jdbcType="INTEGER"/>
+        <result column="subject_name" property="subjectName" jdbcType="VARCHAR"/>
+        <collection property="courseList" ofType="com.qf.pojo.Course">
+            <id column="cid" property="id"/>
+            <result column="course_title" property="courseTitle"/>
+            <result column="course_desc" property="courseDesc"/>
+            <collection property="videoList" ofType="com.qf.pojo.Video">
+                <id column="vid" property="id"/>
+                <result column="title" property="title"/>
+                <result column="speaker_id" property="speakerId"/>
+                <result column="video_url" property="videoUrl"/>
+                <result column="image_url" property="imageUrl"/>
+                <result column="play_num" property="playNum"/>
+                <result column="time" property="time"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="selectSubject" parameterType="int" resultMap="subMap">
+        SELECT s.id as sid, s.subject_name,c.id as cid, c.course_title, c.course_desc,
+         v.id as vid,v.speaker_id,v.video_url,v.image_url, v.title, v.play_num, v.time
+        FROM SUBJECT s
+        INNER JOIN course c
+        ON c.subject_id=s.id
+        INNER JOIN video v
+        ON c.id=v.course_id
+        where s.id=#{id};
+    </select>
+
+
+
+</mapper>

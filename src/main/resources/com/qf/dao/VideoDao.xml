@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qf.dao.VideoDao">
+
+    <resultMap id="VideoMap" type="com.qf.pojo.Video">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="detail" property="detail" jdbcType="VARCHAR"/>
+        <result column="time" property="time" jdbcType="INTEGER"/>
+        <result column="speaker_id" property="speakerId" jdbcType="INTEGER"/>
+        <result column="course_id" property="courseId" jdbcType="INTEGER"/>
+        <result column="video_url" property="videoUrl" jdbcType="VARCHAR"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="play_num" property="playNum" jdbcType="INTEGER"/>
+        <association property="speaker" javaType="com.qf.pojo.Speaker">
+            <id property="id" column="spid"/>
+            <result property="speakerName" column="speaker_name"/>
+        </association>
+        <association property="course" javaType="com.qf.pojo.Course">
+            <id property="id" column="cid"/>
+            <result property="courseTitle" column="course_title"/>
+        </association>
+    </resultMap>
+
+    <select id="findAllVideo" resultMap="VideoMap">
+        SELECT v.id, v.title, v.detail, s.speaker_name, v.time, v.play_num FROM video v, speaker s WHERE v.speaker_id=s.id
+    </select>
+
+    <insert id="addVideo">
+        insert into video(title, course_id, speaker_id, time, image_url, video_url, detail)
+        values (#{title}, #{courseId}, #{speakerId}, #{time}, #{imageUrl}, #{videoUrl}, #{detail})
+    </insert>
+
+    <delete id="delete" parameterType="int">
+        delete from video where id=#{id}
+    </delete>
+
+    <select id="showOne" parameterType="int" resultMap="VideoMap">
+        select * from video where id=#{id}
+    </select>
+
+    <update id="updateVideo" parameterType="com.qf.pojo.Video">
+        update video
+        set title=#{title}, detail=#{detail}, time=#{time}, speaker_id=#{speakerId}, course_id=#{courseId}, video_url=#{videoUrl}, image_url=#{imageUrl}
+        where id=#{id}
+    </update>
+
+    <delete id="deleteMany">
+        delete from video
+        <where>
+            video.id in
+            <foreach item="ids" collection="array" open="(" close=")" separator=",">
+            #{ids}
+            </foreach>
+        </where>
+    </delete>
+
+    <select id="selectVideoByQueryVo" parameterType="com.qf.pojo.Video" resultMap="VideoMap">
+        SELECT v.id, v.title, v.detail, v.time, s.speaker_name FROM video v, speaker s
+        <where>
+            v.speaker_id=s.id
+            <if test="title != null and title != ''">
+                video.title like "%"#{title}"%"
+            </if>
+            <if test="speakerId != null and speakerId != ''">
+                and v.speaker.id = #{speakerId}
+            </if>
+            <if test="courseId != null and courseId != ''">
+                and v.course_id =  #{courseId}
+            </if>
+        </where>
+--         limit #{start}, #{size}
+    </select>
+
+    <select id="conditionQuery" parameterType="com.qf.pojo.Video" resultMap="VideoMap">
+        select v.id as vid,v.title,v.detail,v.time,v.speaker_id,v.course_id,v.video_url,v.image_url,v.play_num
+        ,sp.speaker_name,c.course_title,sp.id as spid,c.id as cid from video v
+        inner join speaker sp
+        on sp.id = v.speaker_id
+        inner join course c
+        on c.id = v.course_id
+        where 1=1
+        <if test="title != null">
+            and v.title like "%"#{title}"%"
+        </if>
+        <if test="speakerId != null">
+            and v.speaker_id = #{speakerId}
+        </if>
+        <if test="courseId != null">
+            and v.course_id = #{courseId}
+        </if>
+    </select>
+
+</mapper>
